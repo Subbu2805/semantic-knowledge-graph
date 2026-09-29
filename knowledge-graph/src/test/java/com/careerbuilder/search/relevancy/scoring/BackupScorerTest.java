@@ -95,6 +95,21 @@ public class BackupScorerTest
         Assert.assertEquals(271, original.stream().filter(q->q.index == 2).findFirst().get().result, 1e-4);
         Assert.assertEquals(3, original.stream().filter(q->q.index == 3).findFirst().get().result, 1e-4);
     }
+
+    @Test
+    public void replaceRunners_keepsBetterOriginal() throws IOException
+    {
+        BackupScorer target = new BackupScorer();
+        List<QueryWaitable> original = new LinkedList<>(runners);
+        replacements[0].result = 0;
+        replacements[1].result = 0;
+
+        target.replaceRunners(original, replacementRunners);
+
+        Assert.assertEquals(4, original.size());
+        Assert.assertEquals(0, original.stream().filter(q->q.index == 0).findFirst().get().result, 1e-4);
+        Assert.assertEquals(1, original.stream().filter(q->q.index == 2).findFirst().get().result, 1e-4);
+    }
 }
 
 

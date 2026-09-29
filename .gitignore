@@ -1,6 +1,8 @@
 deploy
 lucene-solr
 cores/
+.solr-dist/
+downloads/
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm
 
 *.iml

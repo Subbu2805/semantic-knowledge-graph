@@ -207,6 +207,33 @@ public class FacetFieldAdapterTest {
     }
 
     @Test
+    public void getMapValue_MissingComponent() throws IOException
+    {
+        NodeContext context = new NodeContext(new ParameterSet(null, null, invariants));
+        FacetFieldAdapter target = new FacetFieldAdapter(context, "title");
+
+        SimpleOrderedMap<Object> resultBucket = new SimpleOrderedMap<>();
+        resultBucket.add("val", "^testtitle");
+        SimpleOrderedMap<String> actual = target.getMapValue(resultBucket);
+
+        Assert.assertEquals(1, actual.size());
+        Assert.assertEquals("testtitle", actual.get("title"));
+    }
+
+    @Test
+    public void getStringValue_MissingKeyComponent() throws IOException
+    {
+        NodeContext context = new NodeContext(new ParameterSet(null, null, invariants));
+        FacetFieldAdapter target = new FacetFieldAdapter(context, "title");
+
+        SimpleOrderedMap<Object> resultBucket = new SimpleOrderedMap<>();
+        resultBucket.add("val", "^testtitle");
+        String actual = target.getStringValue(resultBucket);
+
+        Assert.assertEquals(" testtitle", actual);
+    }
+
+    @Test
     public void getStringValue_FieldWithDots() throws IOException
     {
         NodeContext context = new NodeContext(new ParameterSet(null,null,invariants));

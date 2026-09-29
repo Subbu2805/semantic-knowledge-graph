@@ -112,14 +112,21 @@ public class ResponseUtilityTest {
         assertEquals("v4", actual.get(2).value);
     }
 
-    @Test(expected= IllegalArgumentException.class)
-    public void filterMergeException()
+    // passed-in values may be filtered out by the popularity thresholds before merging
+    @Test
+    public void filterMergeMoreKeepValuesThanResults()
     {
         List<String> keep = Arrays.asList(new String[]{"v3", "v4", "v2", "v2", "v2"});
 
         List<ResponseValue> actual = ResponseUtility.filterMergeResults(values, keep, 2, SortType.foreground_popularity);
+
+        assertEquals(3, actual.size());
+        assertEquals("v2", actual.get(0).value);
+        assertEquals("v3", actual.get(1).value);
+        assertEquals("v4", actual.get(2).value);
     }
 
+    @Test
     public void thresholdMinPopularityNoFilter()
     {
         List<ResponseValue> actual = ResponseUtility.thresholdMinPop(values, 0);
@@ -131,19 +138,21 @@ public class ResponseUtilityTest {
         assertEquals("v4", actual.get(3).value);
     }
 
+    @Test
     public void thresholdMinPopularityFilter()
     {
-        List<ResponseValue> actual = ResponseUtility.thresholdMinPop(values, 1);
+        List<ResponseValue> actual = ResponseUtility.thresholdMinPop(values, 0.5);
 
         assertEquals(1, actual.size());
         assertEquals("v1", actual.get(0).value);
     }
 
+    @Test
     public void thresholdMinPopularityFilterNoReturn()
     {
-        List<ResponseValue> actual = ResponseUtility.thresholdMinFGBGPop(values, 1);
+        List<ResponseValue> actual = ResponseUtility.thresholdMinFGBGPop(values, 0.5);
 
-        assertEquals(1, actual.size());
+        assertEquals(2, actual.size());
         assertEquals("v1", actual.get(0).value);
         assertEquals("v2", actual.get(1).value);
     }
