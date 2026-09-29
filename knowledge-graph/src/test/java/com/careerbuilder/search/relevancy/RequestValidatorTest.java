@@ -94,6 +94,55 @@ public class RequestValidatorTest {
 
 
     @Test(expected = SolrException.class)
+    public void validate_EmptyQueries() throws IOException {
+        KnowledgeGraphRequest request = new KnowledgeGraphRequest(new RequestNode[1]);
+        request.queries = new String[0];
+        request.compare[0] = new RequestNode(null, "testType");
+        RequestValidator target = new RequestValidator(solrRequest, request);
+        target.validate();
+    }
+
+    @Test(expected = SolrException.class)
+    public void validate_NegativeLimit() throws IOException {
+        KnowledgeGraphRequest request = new KnowledgeGraphRequest(new RequestNode[1]);
+        request.queries = new String[] { "test" };
+        request.compare[0] = new RequestNode(null, "testType");
+        request.compare[0].limit = -1;
+        RequestValidator target = new RequestValidator(solrRequest, request);
+        target.validate();
+    }
+
+    @Test(expected = SolrException.class)
+    public void validate_NegativeNodeMinPopularity() throws IOException {
+        KnowledgeGraphRequest request = new KnowledgeGraphRequest(new RequestNode[1]);
+        request.queries = new String[] { "test" };
+        request.compare[0] = new RequestNode(null, "testType");
+        request.compare[0].min_popularity = -1.0;
+        RequestValidator target = new RequestValidator(solrRequest, request);
+        target.validate();
+    }
+
+    @Test(expected = SolrException.class)
+    public void validate_NegativeRequestMinPopularity() throws IOException {
+        KnowledgeGraphRequest request = new KnowledgeGraphRequest(new RequestNode[1]);
+        request.queries = new String[] { "test" };
+        request.min_popularity = -1;
+        request.compare[0] = new RequestNode(null, "testType");
+        RequestValidator target = new RequestValidator(solrRequest, request);
+        target.validate();
+    }
+
+    @Test(expected = SolrException.class)
+    public void validate_NullValue() throws IOException {
+        KnowledgeGraphRequest request = new KnowledgeGraphRequest(new RequestNode[1]);
+        request.queries = new String[] { "test" };
+        request.compare[0] = new RequestNode(null, "testType");
+        request.compare[0].values = new String[] { "ok", null };
+        RequestValidator target = new RequestValidator(solrRequest, request);
+        target.validate();
+    }
+
+    @Test(expected = SolrException.class)
     public void validate_TwoTrunkTreeCompareException() throws IOException {
         new MockUp<ParseUtility>() {
             @Mock

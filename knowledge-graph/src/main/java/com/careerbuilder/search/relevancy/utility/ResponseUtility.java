@@ -13,22 +13,35 @@ public class ResponseUtility {
         List<ResponseValue> scoredValues = new ArrayList<>(Arrays.asList(responses));
         SortUtility.sortResponseValues(scoredValues, node.sort);
 
-
+        double minPopularity = minPopularity(node, request);
         if (request.return_popularity)
         {
-            scoredValues = thresholdMinPop(scoredValues, request.min_popularity);
+            scoredValues = thresholdMinPop(scoredValues, minPopularity);
         }
         else
         {
-            scoredValues = thresholdMinFGBGPop(scoredValues, request.min_popularity);
+            scoredValues = thresholdMinFGBGPop(scoredValues, minPopularity);
         }
         distinct(scoredValues);
-        if(node.discover_values && scoredValues.size() > 0) {
-            List<String> requestValues = distinct(node.values);
+        if(scoredValues.size() > 0) {
+            List<String> requestValues = retainScored(distinct(node.values), scoredValues);
             int limit = Math.min(scoredValues.size(), node.limit);
             scoredValues = filterMergeResults(scoredValues, requestValues, limit, node.sort);
         }
         return scoredValues.toArray(new ResponseValue[scoredValues.size()]);
+    }
+
+    protected static double minPopularity(RequestNode node, KnowledgeGraphRequest request)
+    {
+        return node.min_popularity == null ? request.min_popularity : node.min_popularity;
+    }
+
+    // passed-in values which fell below the popularity threshold are no longer scored, so they cannot be kept
+    protected static List<String> retainScored(List<String> requestValues, List<ResponseValue> scoredValues)
+    {
+        return requestValues.stream().filter(
+                (String s) -> scoredValues.stream().anyMatch(r -> r.valuesEqual(new ResponseValue(s))))
+                .collect(Collectors.toCollection(LinkedList::new));
     }
 
     protected static List<ResponseValue> thresholdMinPop(List<ResponseValue> values, double threshold)

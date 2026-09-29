@@ -10,6 +10,7 @@ public class RequestNode {
     public List<SimpleOrderedMap<String>> normalizedValues;
     public SortType sort;
     public int limit;
+    public Double min_popularity;
     public boolean discover_values;
     public RequestNode[] compare;
 
