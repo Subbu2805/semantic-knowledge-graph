@@ -9,6 +9,7 @@ import com.careerbuilder.search.relevancy.waitable.AggregationWaitable;
 import com.careerbuilder.search.relevancy.waitable.Waitable;
 import com.careerbuilder.search.relevancy.threadpool.ThreadPool;
 import com.careerbuilder.search.relevancy.utility.MapUtility;
+import com.careerbuilder.search.relevancy.utility.ParseUtility;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Sort;
 import org.apache.solr.common.util.SimpleOrderedMap;
@@ -103,8 +104,6 @@ public class NodeNormalizer implements RecursionOp {
     }
 
     private String buildFacetQuery(String field, String inputValue) {
-        if(inputValue == null)
-            return field + ":*";
-        return field + ":\"" + inputValue + "\"";
+        return ParseUtility.buildFieldQuery(field, inputValue);
     }
 }

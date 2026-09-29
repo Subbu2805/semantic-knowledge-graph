@@ -1,5 +1,7 @@
 package com.careerbuilder.search.relevancy.utility;
 
+import com.careerbuilder.search.relevancy.model.KnowledgeGraphRequest;
+import com.careerbuilder.search.relevancy.model.RequestNode;
 import com.careerbuilder.search.relevancy.model.ResponseNode;
 import com.careerbuilder.search.relevancy.model.ResponseValue;
 import com.careerbuilder.search.relevancy.model.SortType;
@@ -146,5 +148,54 @@ public class ResponseUtilityTest {
         assertEquals(1, actual.size());
         assertEquals("v1", actual.get(0).value);
         assertEquals("v2", actual.get(1).value);
+    }
+
+    @Test
+    public void filterAndSort_nodeMinPopularityOverridesRequest()
+    {
+        KnowledgeGraphRequest request = new KnowledgeGraphRequest();
+        RequestNode node = requestNode(10, true);
+        node.min_popularity = 3.0;
+
+        ResponseValue[] actual = ResponseUtility.filterAndSortValues(
+                new ResponseValue[] { popular("popular", 5), popular("rare", 1) }, node, request);
+
+        assertEquals(1, actual.length);
+        assertEquals("popular", actual[0].value);
+    }
+
+    @Test
+    public void filterAndSort_dropsPassedInValuesBelowThreshold()
+    {
+        KnowledgeGraphRequest request = new KnowledgeGraphRequest();
+        RequestNode node = requestNode(2, true);
+        node.values = new String[] { "unpopular" };
+
+        ResponseValue[] actual = ResponseUtility.filterAndSortValues(
+                new ResponseValue[] { popular("unpopular", 0), popular("gen1", 5), popular("gen2", 4) },
+                node, request);
+
+        assertEquals(2, actual.length);
+        assertEquals("gen1", actual[0].value);
+        assertEquals("gen2", actual[1].value);
+    }
+
+    private RequestNode requestNode(int limit, boolean discoverValues)
+    {
+        RequestNode node = new RequestNode();
+        node.type = "type";
+        node.limit = limit;
+        node.discover_values = discoverValues;
+        node.sort = SortType.popularity;
+        return node;
+    }
+
+    private ResponseValue popular(String value, double popularity)
+    {
+        ResponseValue responseValue = new ResponseValue(value);
+        responseValue.popularity = popularity;
+        responseValue.foreground_popularity = popularity;
+        responseValue.background_popularity = popularity;
+        return responseValue;
     }
 }

@@ -163,7 +163,7 @@ If supplied, a set of Solr queries used to score the results generated using the
 If supplied, a set of Solr queries used to score the results generated using the queries in the queries parameter. The relatedness score will measure statistical skewedness away from the background_queries queries merged together using AND. Defaults to match all documents. See the types parameter for query field types.
 
 **min_popularity** optional	double  
-The minimum popularity of returned results (assuming exactly 1 million total documents). Results which have a popularity, foreground popularity, or background popularity lower than min_popularity out of 1 million are omitted. Defaults to at least 1 hit per million documents.
+The minimum popularity of returned results (assuming exactly 1 million total documents). Results which have a popularity, foreground popularity, or background popularity lower than min_popularity out of 1 million are omitted. Defaults to at least 1 hit per million documents. May also be set on an individual compare node, in which case it overrides the request-level value for that node.
 
 **normalize_values** optional	boolean  
 Whether the API should attempt to find ids and names for passed-in values. If false, the API will return passed-in values in the name field without regard to whether they represent an id or name for an entity. Turning normalization off may boost performance. Defaults to "true."

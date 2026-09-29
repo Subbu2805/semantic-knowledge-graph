@@ -7,6 +7,7 @@ import com.careerbuilder.search.relevancy.model.ResponseNode;
 import com.careerbuilder.search.relevancy.model.ResponseValue;
 import com.careerbuilder.search.relevancy.normalization.NodeNormalizer;
 import com.careerbuilder.search.relevancy.scoring.NodeScorer;
+import com.careerbuilder.search.relevancy.utility.ParseUtility;
 
 import java.io.IOException;
 
@@ -55,8 +56,9 @@ public class RequestTreeRecurser {
         if(requests != null) {
             setDefaults(requests);
             for (ResponseValue value : parentResponse.values) {
-                String query = value.value == null || value.value.equals("") ? "*" : value.value.toLowerCase();
-                NodeContext context = new NodeContext(parentContext, parentResponse.type+":"+query);
+                String query = ParseUtility.buildFieldQuery(parentResponse.type,
+                        value.value == null ? null : value.value.toLowerCase());
+                NodeContext context = new NodeContext(parentContext, query);
                 if(context.request.normalize) {
                     normalizer.transform(context, requests, null);
                 }

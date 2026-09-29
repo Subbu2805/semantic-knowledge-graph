@@ -1,5 +1,7 @@
 package com.careerbuilder.search.relevancy.model;
 
+import com.google.gson.annotations.SerializedName;
+
 public class KnowledgeGraphRequest
 {
 
@@ -21,6 +23,7 @@ public class KnowledgeGraphRequest
     public String [] background_queries;
     public double min_popularity;
     public boolean return_popularity;
+    @SerializedName(value = "normalize_values", alternate = {"normalize"})
     public boolean normalize;
     public RequestNode[] compare;
 }

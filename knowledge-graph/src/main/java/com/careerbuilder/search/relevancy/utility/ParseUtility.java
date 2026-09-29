@@ -25,6 +25,18 @@ public class ParseUtility
         return deflt;
     }
 
+    // builds a phrase query against a single field, e.g. jobtitle:"data scientist"
+    public static String buildFieldQuery(String field, String value) {
+        if(value == null || value.trim().equals("")) {
+            return field + ":*";
+        }
+        return field + ":\"" + escapeQueryValue(value) + "\"";
+    }
+
+    public static String escapeQueryValue(String value) {
+        return value.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+
     public static Query parseQueryString(String qString, SolrQueryRequest req) {
         try {
             QParser parser = QParser.getParser(qString, req.getParams().get("defType"), req);

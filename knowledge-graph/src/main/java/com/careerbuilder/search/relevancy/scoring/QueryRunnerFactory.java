@@ -48,7 +48,7 @@ public class QueryRunnerFactory
     private QueryWaitable buildRunner(DocSet domain, QueryWaitable.QueryType type, String field, String value, int index)
     {
         Query query = ParseUtility.parseQueryString(
-                field + ":\"" + value  + "\"",
+                ParseUtility.buildFieldQuery(field, value),
                 context.req);
         return new QueryWaitable(context.req.getSearcher(), query, domain, type, index);
     }
