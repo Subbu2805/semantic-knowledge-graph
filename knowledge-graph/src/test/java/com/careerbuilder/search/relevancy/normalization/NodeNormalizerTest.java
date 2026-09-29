@@ -117,7 +117,7 @@ public class NodeNormalizerTest {
         new Expectations() {{
             new FacetFieldAdapter(context, "testField");
             adapter.hasExtension(); returns(true);
-            new AggregationWaitable(context, adapter, "null:\"testvalue\"", null, 0, 100);
+            new AggregationWaitable((NodeContext) any, (FacetFieldAdapter) any, "null:\"testvalue\"", null, 0, 100);
         }};
 
         Map<String, List<AggregationWaitable>> runners = Deencapsulation.invoke(target, "buildRunners", context, requests);

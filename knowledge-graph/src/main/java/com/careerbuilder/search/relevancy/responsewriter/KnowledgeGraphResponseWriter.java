@@ -4,6 +4,7 @@ import com.careerbuilder.search.relevancy.model.*;
 import com.careerbuilder.search.relevancy.model.Error;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.util.NamedList;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.response.QueryResponseWriter;
@@ -27,7 +28,7 @@ public class KnowledgeGraphResponseWriter implements QueryResponseWriter{
     {
         Gson gson = new GsonBuilder().registerTypeAdapter(ResponseValue.class, new ResponseValueSerializer()).create();
         Exception e = response.getException();
-        int status = (int)response.getResponseHeader().get("status");
+        int status = getStatus(response);
         KnowledgeGraphResponse model = (KnowledgeGraphResponse)response.getValues().get("relatednessResponse");
         if(e != null) {
             if(model == null) {
@@ -36,6 +37,16 @@ public class KnowledgeGraphResponseWriter implements QueryResponseWriter{
             model.error = new Error(e.getMessage(), status);
         }
         writer.write(gson.toJson(model, KnowledgeGraphResponse.class));
+    }
+
+    private int getStatus(SolrQueryResponse response)
+    {
+        NamedList<Object> header = response.getResponseHeader();
+        Object status = header == null ? null : header.get("status");
+        if(status instanceof Number) {
+            return ((Number) status).intValue();
+        }
+        return response.getException() == null ? 0 : SolrException.ErrorCode.SERVER_ERROR.code;
     }
 
 }

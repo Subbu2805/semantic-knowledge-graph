@@ -44,7 +44,7 @@ public class FacetFieldAdapter {
             String[] facetFieldKeys = facetFieldExtension.split(facetFieldDelimiter);
             String[] facetFieldValues = value.split("\\"+facetFieldValueDelimiter);
             for (int i = 0; i < facetFieldKeys.length && i < facetFieldValues.length; ++i) {
-                if(!facetFieldValues.equals("")) {
+                if(!facetFieldValues[i].equals("")) {
                     result.add(facetFieldKeys[i], facetFieldValues[i]);
                 }
             }
@@ -55,7 +55,7 @@ public class FacetFieldAdapter {
     public String getStringValue(SimpleOrderedMap<Object> bucket)
     {
         SimpleOrderedMap<String> mapValues = getMapValue(bucket);
-        if(mapValues == null)
+        if(mapValues == null || mapValues.get(this.facetFieldKey) == null)
         {
             return ((String) bucket.get("val")).replace(facetFieldValueDelimiter, " ");
         }
@@ -75,7 +75,7 @@ public class FacetFieldAdapter {
         } else {
             facetField.append(field).append(".").append(extension);
         }
-        if(globalFacetFieldExtension != "")
+        if(!globalFacetFieldExtension.equals(""))
             return facetField.append(".").append(globalFacetFieldExtension).toString();
         else
             return facetField.toString();

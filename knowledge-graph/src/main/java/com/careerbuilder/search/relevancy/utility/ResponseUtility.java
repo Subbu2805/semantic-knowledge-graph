@@ -66,8 +66,6 @@ public class ResponseUtility {
                                                          List<String> requestValues, int limit, SortType sort)
     {
         List<String> keepSet = requestValues == null ? new LinkedList<>() : requestValues;
-        if (keepSet.size() > results.size())
-            throw new IllegalArgumentException("The keep set is larger than the results set.");
 
         List<ResponseValue> keepList= new LinkedList<>();
         List<ResponseValue> disposableList = new LinkedList<>();

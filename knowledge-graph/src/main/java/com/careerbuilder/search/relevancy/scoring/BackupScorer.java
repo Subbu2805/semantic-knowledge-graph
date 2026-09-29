@@ -42,7 +42,15 @@ public class BackupScorer
     }
 
     protected void replaceRunners(List<QueryWaitable> target, List<QueryWaitable> replacers) {
-        target.removeAll(replacers);
-        target.addAll(replacers);
+        for(QueryWaitable replacer : replacers)
+        {
+            int index = target.indexOf(replacer);
+            if(index < 0) {
+                target.add(replacer);
+            }
+            else if(replacer.result > target.get(index).result) {
+                target.set(index, replacer);
+            }
+        }
     }
 }

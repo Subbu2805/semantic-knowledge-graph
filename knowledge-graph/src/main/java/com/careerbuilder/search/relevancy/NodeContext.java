@@ -3,7 +3,9 @@ package com.careerbuilder.search.relevancy;
 import com.careerbuilder.search.relevancy.model.ParameterSet;
 import com.careerbuilder.search.relevancy.model.KnowledgeGraphRequest;
 import com.careerbuilder.search.relevancy.utility.ParseUtility;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.Sort;
 import org.apache.solr.request.SolrQueryRequest;
 import org.apache.solr.search.*;
 
@@ -19,6 +21,7 @@ public class NodeContext {
     public List<Query> fgQueries;
     public List<Query> bgQueries;
     public DocListAndSet queryDomainList;
+    public DocListAndSet bgDomainList;
     public DocSet queryDomain;
     public DocSet fgDomain;
     public DocSet bgDomain;
@@ -65,6 +68,28 @@ public class NodeContext {
         this.queryDomain = req.getSearcher().getDocSet(ParseUtility.parseQueryString(filterQueryString, req), parent.queryDomain);
         this.fgDomain= req.getSearcher().getDocSet(ParseUtility.parseQueryString(filterQueryString, req), parent.fgDomain);
         this.bgDomain= parent.bgDomain;
+        this.bgDomainList = parent.bgDomainList;
+    }
+
+    // a view of this context whose aggregation domain is the background corpus
+    public NodeContext backgroundContext() throws IOException
+    {
+        if(bgDomainList == null) {
+            bgDomainList = req.getSearcher().getDocListAndSet(new MatchAllDocsQuery(), bgDomain, Sort.INDEXORDER, 0, 0);
+        }
+        NodeContext context = new NodeContext();
+        context.req = req;
+        context.request = request;
+        context.parameterSet = parameterSet;
+        context.queries = queries;
+        context.fgQueries = fgQueries;
+        context.bgQueries = bgQueries;
+        context.queryDomain = bgDomain;
+        context.fgDomain = fgDomain;
+        context.bgDomain = bgDomain;
+        context.bgDomainList = bgDomainList;
+        context.queryDomainList = bgDomainList;
+        return context;
     }
 
     public NodeContext() {}

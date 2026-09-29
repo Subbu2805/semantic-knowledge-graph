@@ -9,8 +9,6 @@ import com.careerbuilder.search.relevancy.waitable.AggregationWaitable;
 import com.careerbuilder.search.relevancy.waitable.Waitable;
 import com.careerbuilder.search.relevancy.threadpool.ThreadPool;
 import com.careerbuilder.search.relevancy.utility.MapUtility;
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.Sort;
 import org.apache.solr.common.util.SimpleOrderedMap;
 
 import java.io.IOException;
@@ -86,17 +84,12 @@ public class NodeNormalizer implements RecursionOp {
         FacetFieldAdapter adapter = new FacetFieldAdapter(context, request.type);
         if(request.values != null && adapter.hasExtension())
         {
+            // passed in values are normalized against the whole corpus, not just the queried domain
+            NodeContext normalizationContext = context.backgroundContext();
             for (int k = 0; k < request.values.length; ++k)
             {
-                // load required docListAndSet once and only if necessary
-                if (context.queryDomainList == null)
-                {
-                    context.queryDomainList =
-                            context.req.getSearcher().getDocListAndSet(new MatchAllDocsQuery(),
-                                    context.queryDomain, Sort.INDEXORDER, 0, 0);
-                }
                 String facetQuery = buildFacetQuery(adapter.baseField, request.values[k].toLowerCase());
-                runners.add(new AggregationWaitable(context, adapter, facetQuery, adapter.field, k, DEFAULT_NORM_LIMIT));
+                runners.add(new AggregationWaitable(normalizationContext, adapter, facetQuery, adapter.field, k, DEFAULT_NORM_LIMIT));
             }
         }
         return runners;

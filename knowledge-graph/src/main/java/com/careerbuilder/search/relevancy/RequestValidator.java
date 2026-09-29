@@ -18,8 +18,16 @@ public class RequestValidator {
 
     public void validate()
     {
-        if(request.queries == null) {
+        if(request.queries == null || request.queries.length == 0) {
             throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "No queries supplied for generation / scoring");
+        }
+        for(String query : request.queries) {
+            if(query == null || query.trim().equals("")) {
+                throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "A query is empty or null.");
+            }
+        }
+        if(request.min_popularity < 0) {
+            throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "min_popularity cannot be negative.");
         }
         if(request.compare == null || request.compare.length == 0) {
             throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "Request contains no compare node or an empty compare node");
@@ -35,6 +43,18 @@ public class RequestValidator {
             throw new SolrException(SolrException.ErrorCode.BAD_REQUEST, "A request node contains empty or null type.");
         }
         FieldChecker.checkField(solrRequest, requestNode.type, requestNode.type);
+        if(requestNode.limit < 0) {
+            throw new SolrException(SolrException.ErrorCode.BAD_REQUEST,
+                    "A request node of type \"" + requestNode.type + "\" contains a negative limit.");
+        }
+        if(requestNode.values != null) {
+            for (String value : requestNode.values) {
+                if (value == null || value.trim().equals("")) {
+                    throw new SolrException(SolrException.ErrorCode.BAD_REQUEST,
+                            "A request node of type \"" + requestNode.type + "\" contains an empty or null value.");
+                }
+            }
+        }
 
         if(requestNode.compare != null) {
             for (int i = 0; i < requestNode.compare.length; ++i){

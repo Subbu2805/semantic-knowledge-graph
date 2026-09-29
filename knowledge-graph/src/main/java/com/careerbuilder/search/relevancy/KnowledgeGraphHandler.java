@@ -31,6 +31,9 @@ public class KnowledgeGraphHandler extends RequestHandlerBase
     public void handleRequestBody(SolrQueryRequest solrReq, SolrQueryResponse solrRsp)
             throws Exception {
         KnowledgeGraphRequest request = parsePost(solrReq);
+        if(request == null) {
+            throwWithClassName(" requires a JSON object as POST data");
+        }
         new RequestValidator(solrReq, request).validate();
         ParameterSet parameterSet = new ParameterSet(solrReq.getParams(), defaults, invariants);
         NodeContext context = new NodeContext(request, solrReq, parameterSet);
@@ -67,7 +70,7 @@ public class KnowledgeGraphHandler extends RequestHandlerBase
         String inputString;
         inputString = CharStreams.toString(inputReader);
         inputReader.close();
-        if(inputString.equals("") || inputString == null) {
+        if(inputString == null || inputString.trim().equals("")) {
            throwWithClassName(" requires POST data");
         }
         return inputString;
