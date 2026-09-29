@@ -169,6 +169,8 @@ The minimum popularity of returned results (assuming exactly 1 million total doc
 Whether the API should attempt to find ids and names for passed-in values. If false, the API will return passed-in values in the name field without regard to whether they represent an id or name for an entity. Turning normalization off may boost performance. Defaults to "true."
 
 #Building and Running
+Note: several Maven repositories referenced by Solr 5.1.0's ivy configuration no longer exist, so `build.sh` fails to resolve dependencies on a modern machine. Use `build-solr.sh` instead — it clones and patches Solr 5.1.0, points ivy at working mirrors, builds the server, and packages it with the plugin into `deploy`. Java 8, Ant, Maven and git are required.
+
 The easiest way to build the Semantic Knowledg Graph is to run the `build.sh` script in the root directory of the project (or `rebuild.sh`, which will build and launch an Apache Solr instance with the Semantic Knowledge Graph configured). The final application will be found in the `deploy` directory, and you can launch it using the `restart-solr.sh` script found in that directory. You can simply copy this `deploy` folder to your production environment and run the `restart-solr.sh` script to launch the service. By default, you can hit it at `http://localhost:8983/solr/knowledge-graph/rel`. See the example in the Examples section above for usage.
 
 #Using the System
