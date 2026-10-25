@@ -1,0 +1,148 @@
+{
+  "use_cases": [
+    {
+      "id": "jobs-related-titles",
+      "core": "jobs",
+      "domain": "Talent Intelligence",
+      "title": "Which job titles are most related to a free-text phrase?",
+      "description": "Search-as-you-type / query understanding for a job board: map the phrase \"machine learning\" typed by a job seeker to the job titles it most strongly implies.",
+      "request": {"queries": ["content:\"machine learning\""], "compare": [{"type": "jobtitle", "limit": 3}]},
+      "expect": [{"type": "jobtitle", "in_top": 2, "any_of": ["Data Scientist", "Machine Learning Engineer"]}]
+    },
+    {
+      "id": "jobs-title-skills",
+      "core": "jobs",
+      "domain": "Talent Intelligence",
+      "title": "What skills define a role (not just which are common)?",
+      "description": "Build a skills taxonomy / job description template. Relatedness ranks distinguishing skills above generic ones like \"Communication\" that are popular everywhere.",
+      "request": {"queries": ["jobtitle:\"data scientist\""], "compare": [{"type": "skills", "limit": 6}]},
+      "expect": [{"type": "skills", "in_top": 3, "any_of": ["Machine Learning", "Statistics"]}, {"type": "skills", "in_top": 6, "none_of": ["Communication", "Teamwork"]}]
+    },
+    {
+      "id": "jobs-skill-to-roles",
+      "core": "jobs",
+      "domain": "Talent Intelligence",
+      "title": "Which roles need a given skill, and where are they hiring?",
+      "description": "Candidate recommendation: a candidate lists Kubernetes on their resume; find the roles that need it, then the locations most associated with each role (2-hop traversal).",
+      "request": {"queries": ["skills:\"kubernetes\""], "compare": [{"type": "jobtitle", "limit": 3, "compare": [{"type": "location", "limit": 2}]}]},
+      "expect": [{"type": "jobtitle", "in_top": 1, "any_of": ["DevOps Engineer"]}]
+    },
+    {
+      "id": "jobs-emerging-skills",
+      "core": "jobs",
+      "domain": "Talent Intelligence",
+      "title": "Which skills are emerging this year?",
+      "description": "Labor-market trend analysis: compare 2026 postings (foreground) with 2024 postings (background) to surface skills whose demand is growing.",
+      "request": {"queries": ["posted_year:2026"], "background_queries": ["posted_year:2024"], "compare": [{"type": "skills", "limit": 5}]},
+      "expect": [{"type": "skills", "in_top": 3, "any_of": ["Generative AI", "Large Language Models"]}]
+    },
+    {
+      "id": "jobs-skill-gap",
+      "core": "jobs",
+      "domain": "Talent Intelligence",
+      "title": "Score a candidate's skills against a target role",
+      "description": "Skill-gap analysis / resume scoring: rank the skills a candidate already has by how relevant they are to Data Engineer. Unrelated skills receive negative relatedness.",
+      "request": {"queries": ["jobtitle:\"data engineer\""], "min_popularity": 0, "compare": [{"type": "skills", "values": ["Apache Kafka", "Excel", "Patient Care", "SQL"], "discover_values": false, "limit": 4}]},
+      "expect": [{"type": "skills", "in_top": 2, "any_of": ["Apache Kafka", "SQL"]}, {"type": "skills", "negative": ["Patient Care"]}]
+    },
+    {
+      "id": "ecommerce-query-intent",
+      "core": "ecommerce",
+      "domain": "E-commerce Search",
+      "title": "Understand the intent behind a shopper's query",
+      "description": "Query classification for search relevance: route \"cheap gaming laptop\" to the right category, and find the brands and attributes it implies for boosting and facet pre-selection.",
+      "request": {"queries": ["search_terms:\"cheap gaming laptop\""], "compare": [{"type": "category", "limit": 1}, {"type": "brand", "limit": 3}, {"type": "attributes", "limit": 3}]},
+      "expect": [{"type": "category", "in_top": 1, "any_of": ["Gaming Laptops"]}]
+    },
+    {
+      "id": "ecommerce-disambiguation",
+      "core": "ecommerce",
+      "domain": "E-commerce Search",
+      "title": "Disambiguate an ambiguous query",
+      "description": "\"laptop\" means different things to different shoppers. Surface every interpretation with its distinguishing attributes to drive a \"did you mean\" or category picker.",
+      "request": {"queries": ["search_terms:\"laptop\""], "compare": [{"type": "category", "limit": 2, "compare": [{"type": "attributes", "limit": 3}]}]},
+      "expect": [{"type": "category", "in_top": 2, "any_of": ["Business Laptops"]}, {"type": "category", "in_top": 2, "any_of": ["Gaming Laptops"]}]
+    },
+    {
+      "id": "ecommerce-related-searches",
+      "core": "ecommerce",
+      "domain": "E-commerce Search",
+      "title": "Related searches / query expansion",
+      "description": "Generate \"people also searched for\" suggestions and synonym candidates for a query from shopper behaviour.",
+      "request": {"queries": ["search_terms:\"running shoes\""], "compare": [{"type": "search_terms", "limit": 5}]},
+      "expect": [{"type": "search_terms", "in_top": 5, "any_of": ["marathon shoes", "jogging shoes", "cushioned sneakers"]}]
+    },
+    {
+      "id": "ecommerce-brand-profile",
+      "core": "ecommerce",
+      "domain": "E-commerce Search",
+      "title": "What is a brand known for?",
+      "description": "Merchandising and competitive analysis: the attributes and price bands that most distinguish Salomon products from the rest of the catalog.",
+      "request": {"queries": ["brand:\"salomon\""], "compare": [{"type": "attributes", "limit": 4}, {"type": "price_band", "limit": 1}]},
+      "expect": [{"type": "attributes", "in_top": 2, "any_of": ["Grippy Outsole", "Gore-Tex", "Rock Plate"]}]
+    },
+    {
+      "id": "healthcare-differential",
+      "core": "healthcare",
+      "domain": "Clinical Decision Support",
+      "title": "Differential diagnosis from presenting symptoms",
+      "description": "Given symptoms (multiple queries are ANDed), rank candidate conditions and the specialty to refer to. Synthetic data, for demonstration only, not medical advice.",
+      "request": {"queries": ["symptoms:\"wheezing\"", "symptoms:\"cough\""], "compare": [{"type": "conditions", "limit": 3}, {"type": "specialty", "limit": 1}]},
+      "expect": [{"type": "conditions", "in_top": 1, "any_of": ["Asthma"]}, {"type": "specialty", "in_top": 1, "any_of": ["Pulmonology"]}]
+    },
+    {
+      "id": "healthcare-treatments",
+      "core": "healthcare",
+      "domain": "Clinical Decision Support",
+      "title": "Typical treatments for a condition",
+      "description": "Care-pathway analytics: medications most associated with Type 2 Diabetes encounters.",
+      "request": {"queries": ["conditions:\"type 2 diabetes\""], "compare": [{"type": "medications", "limit": 4}]},
+      "expect": [{"type": "medications", "in_top": 1, "any_of": ["Metformin"]}]
+    },
+    {
+      "id": "healthcare-comorbidity",
+      "core": "healthcare",
+      "domain": "Clinical Decision Support",
+      "title": "Comorbidity discovery",
+      "description": "Population health: which other conditions co-occur with Type 2 Diabetes more than chance would predict.",
+      "request": {"queries": ["conditions:\"type 2 diabetes\""], "compare": [{"type": "conditions", "limit": 3}]},
+      "expect": [{"type": "conditions", "in_top": 2, "any_of": ["Hypertension"]}]
+    },
+    {
+      "id": "healthcare-note-routing",
+      "core": "healthcare",
+      "domain": "Clinical Decision Support",
+      "title": "Route a free-text clinical note to a specialty",
+      "description": "Triage: map unstructured note text (\"heartburn\") to a specialty and likely conditions.",
+      "request": {"queries": ["content:heartburn"], "compare": [{"type": "specialty", "limit": 1}, {"type": "conditions", "limit": 2}]},
+      "expect": [{"type": "specialty", "in_top": 1, "any_of": ["Gastroenterology"]}]
+    },
+    {
+      "id": "support-ticket-routing",
+      "core": "support",
+      "domain": "Customer Support",
+      "title": "Auto-route a new support ticket",
+      "description": "Ticket triage: from the ticket text alone, predict the owning team and the most likely component.",
+      "request": {"queries": ["content:\"charged twice\""], "compare": [{"type": "team", "limit": 1}, {"type": "component", "limit": 2}, {"type": "resolution", "limit": 2}]},
+      "expect": [{"type": "team", "in_top": 1, "any_of": ["Payments"]}]
+    },
+    {
+      "id": "support-release-regression",
+      "core": "support",
+      "domain": "Customer Support",
+      "title": "Detect what regressed in the latest release",
+      "description": "Release health / anomaly detection: compare tickets filed against v4.3 (foreground) with earlier releases (background) to find the issue types and components that spiked.",
+      "request": {"queries": ["release:\"v4.3\""], "background_queries": ["release:\"v4.1\" OR release:\"v4.2\""], "compare": [{"type": "issue_type", "limit": 2, "compare": [{"type": "component", "limit": 1}]}]},
+      "expect": [{"type": "issue_type", "in_top": 2, "any_of": ["App Crash"]}, {"type": "component", "in_top": 1, "any_of": ["Android Client", "Push Notifications"]}]
+    },
+    {
+      "id": "support-root-cause",
+      "core": "support",
+      "domain": "Customer Support",
+      "title": "Root cause and fix for an issue type",
+      "description": "Knowledge-base authoring: for Slow Performance tickets, find the components at fault and how each was usually resolved.",
+      "request": {"queries": ["issue_type:\"slow performance\""], "compare": [{"type": "component", "limit": 2, "compare": [{"type": "resolution", "limit": 1}]}]},
+      "expect": [{"type": "component", "in_top": 2, "any_of": ["Database", "Search Service"]}]
+    }
+  ]
+}

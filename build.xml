@@ -105,43 +105,22 @@
                 <include name="*.sh"/>
             </fileset>
         </copy>
+
+        <echo message="Integrating use cases, datasets, scripts and UI"/>
+        <copy todir="${deploy.dir}">
+            <fileset dir="${basedir}">
+                <include name="datasets/**"/>
+                <include name="use-cases/**"/>
+                <include name="scripts/**"/>
+                <include name="ui/**"/>
+            </fileset>
+        </copy>
+        <chmod perm="+x">
+            <fileset dir="${deploy.dir}" includes="*.sh scripts/*.sh scripts/*.py ui/*.py"/>
+        </chmod>
     </target>
  
 
-    <target name="package" depends="build" description="Bundles up pre-built artifacts into a distribution">
-        <echo message="Creating required directories..."/>
-        <mkdir dir="${deploy.dir}"/>
-
-        <echo message="Packaging up Solr..."/>
-		<copy todir="${deploy.dir}/solr">
-            <fileset dir="${basedir}/lucene-solr/solr/">
-                <include name="server/**"/>
-            </fileset>
-		</copy>
-
-		<copy todir="${deploy.dir}/solr">
-            <fileset dir="${basedir}/lucene-solr/solr/">
-                <include name="bin/solr"/>
-            </fileset>
-		</copy>
-
-		<copy todir="${deploy.dir}/solr/server">
-            <fileset dir="${basedir}/configs/" includes="solr/**" />
-        </copy>
-
-        <echo message="Integrating knowledge-graph..."/>
-        <copy todir="${deploy.dir}/solr/server/lib">
-            <fileset dir="${basedir}/knowledge-graph/target">
-                <include name="*.jar"/>
-            </fileset>
-        </copy>
-
-        <echo message="Integrating Startup Script"/>
-        <copy todir="${deploy.dir}">
-            <fileset dir="${basedir}/configs">
-                <include name="*.sh"/>
-            </fileset>
-        </copy>
-    </target>
+    <target name="package" depends="build, package-nobuild" description="Builds everything and bundles it into a distribution" />
     
 </project>
