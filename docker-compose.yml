@@ -1,0 +1,29 @@
+# Requires ./deploy (run ./build-solr.sh first).
+services:
+  solr:
+    build: .
+    image: semantic-knowledge-graph:latest
+    ports: ["${SOLR_HOST_PORT:-8983}:8983"]
+    environment:
+      SOLR_HEAP: ${SOLR_HEAP:-2g}
+    restart: unless-stopped
+
+  # One-shot job: indexes the use-case datasets, then runs the smoke test.
+  loader:
+    image: semantic-knowledge-graph:latest
+    depends_on:
+      solr: { condition: service_healthy }
+    environment:
+      SOLR_URL: http://solr:8983/solr
+    command: ["bash", "-c", "scripts/wait-for-solr.sh && scripts/load-datasets.sh && python3 scripts/smoke_test.py"]
+    restart: "no"
+
+  ui:
+    image: semantic-knowledge-graph:latest
+    depends_on:
+      solr: { condition: service_healthy }
+    ports: ["${UI_HOST_PORT:-8080}:8080"]
+    environment:
+      SOLR_URL: http://solr:8983/solr
+    command: ["python3", "ui/server.py"]
+    restart: unless-stopped

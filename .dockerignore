@@ -1,0 +1,4 @@
+*
+!deploy/
+deploy/solr/server/solr/*/data/
+deploy/solr/server/logs/

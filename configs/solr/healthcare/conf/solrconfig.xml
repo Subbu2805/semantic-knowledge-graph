@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+ Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ use this file except in compliance with the License. You may obtain a copy of
+ the License at http://www.apache.org/licenses/LICENSE-2.0
+-->
+<config>
+  <luceneMatchVersion>5.1.0</luceneMatchVersion>
+  <lib dir="../../lib" regex=".*\.jar"/>
+  <dataDir>${solr.data.dir:}</dataDir>
+  <directoryFactory name="DirectoryFactory" class="${solr.directoryFactory:solr.NRTCachingDirectoryFactory}"/>
+  <codecFactory class="solr.SchemaCodecFactory"/>
+  <schemaFactory class="ClassicIndexSchemaFactory"/>
+  <jmx/>
+
+  <updateHandler class="solr.DirectUpdateHandler2">
+    <updateLog>
+      <str name="dir">${solr.ulog.dir:}</str>
+    </updateLog>
+    <autoCommit>
+      <maxTime>${solr.autoCommit.maxTime:15000}</maxTime>
+      <openSearcher>false</openSearcher>
+    </autoCommit>
+    <autoSoftCommit>
+      <maxTime>${solr.autoSoftCommit.maxTime:5000}</maxTime>
+    </autoSoftCommit>
+  </updateHandler>
+
+  <query>
+    <filterCache class="solr.FastLRUCache" size="4096" initialSize="512" autowarmCount="256"/>
+    <queryResultCache class="solr.LRUCache" size="512" initialSize="512" autowarmCount="0"/>
+    <documentCache class="solr.LRUCache" size="512" initialSize="512" autowarmCount="0"/>
+    <useColdSearcher>false</useColdSearcher>
+    <maxWarmingSearchers>2</maxWarmingSearchers>
+  </query>
+
+  <requestDispatcher handleSelect="false">
+    <requestParsers enableRemoteStreaming="false" multipartUploadLimitInKB="2048000" formdataUploadLimitInKB="2048"/>
+  </requestDispatcher>
+
+  <requestHandler name="/select" class="solr.SearchHandler">
+    <lst name="defaults">
+      <str name="echoParams">explicit</str>
+      <int name="rows">10</int>
+      <str name="df">content</str>
+      <str name="wt">json</str>
+    </lst>
+  </requestHandler>
+
+  <queryResponseWriter name="skg" class="com.careerbuilder.search.relevancy.responsewriter.KnowledgeGraphResponseWriter"/>
+  <requestHandler name="/rel" class="com.careerbuilder.search.relevancy.KnowledgeGraphHandler">
+    <lst name="defaults">
+      <str name="df">content</str>
+      <str name="defType">edismax</str>
+    </lst>
+    <lst name="invariants">
+      <str name="wt">skg</str>
+      <str name="conditions.facet-field">name</str>
+      <str name="conditions.key">name</str>
+      <str name="conditions.fallback">content</str>
+      <str name="symptoms.facet-field">name</str>
+      <str name="symptoms.key">name</str>
+      <str name="symptoms.fallback">content</str>
+      <str name="medications.facet-field">name</str>
+      <str name="medications.key">name</str>
+      <str name="medications.fallback">content</str>
+      <str name="specialty.facet-field">name</str>
+      <str name="specialty.key">name</str>
+      <str name="specialty.fallback">content</str>
+      <str name="age_group.facet-field">name</str>
+      <str name="age_group.key">name</str>
+      <str name="age_group.fallback">content</str>
+    </lst>
+  </requestHandler>
+
+  <requestHandler name="/update" class="solr.UpdateRequestHandler">
+    <lst name="defaults">
+      <bool name="f.conditions.split">true</bool>
+      <str name="f.conditions.separator">|</str>
+      <str name="f.conditions.encapsulator">"</str>
+      <bool name="f.symptoms.split">true</bool>
+      <str name="f.symptoms.separator">|</str>
+      <str name="f.symptoms.encapsulator">"</str>
+      <bool name="f.medications.split">true</bool>
+      <str name="f.medications.separator">|</str>
+      <str name="f.medications.encapsulator">"</str>
+      <bool name="f.specialty.split">true</bool>
+      <str name="f.specialty.separator">|</str>
+      <str name="f.specialty.encapsulator">"</str>
+      <bool name="f.age_group.split">true</bool>
+      <str name="f.age_group.separator">|</str>
+      <str name="f.age_group.encapsulator">"</str>
+    </lst>
+  </requestHandler>
+
+  <requestHandler name="/admin/" class="solr.admin.AdminHandlers"/>
+  <requestHandler name="/admin/ping" class="solr.PingRequestHandler">
+    <lst name="invariants">
+      <str name="q">*:*</str>
+      <str name="rows">0</str>
+    </lst>
+  </requestHandler>
+  <requestHandler name="/analysis/field" startup="lazy" class="solr.FieldAnalysisRequestHandler"/>
+
+  <admin>
+    <defaultQuery>*:*</defaultQuery>
+  </admin>
+</config>

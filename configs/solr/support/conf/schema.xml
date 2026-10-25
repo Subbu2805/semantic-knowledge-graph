@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+ Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ use this file except in compliance with the License. You may obtain a copy of
+ the License at http://www.apache.org/licenses/LICENSE-2.0
+-->
+<!--
+ Schema for the "support" Semantic Knowledge Graph use case.
+ Every entity type <type> is indexed twice:
+   <type>       lower-cased keyword field, used to search and score values
+   <type>.name  case-preserving docValues field, used to discover (facet) values
+ Multi-valued CSV columns are pipe (|) separated, see /update defaults in solrconfig.xml.
+-->
+<schema name="support" version="1.5">
+  <uniqueKey>id</uniqueKey>
+  <fields>
+    <field name="id" type="string" indexed="true" stored="true" required="true"/>
+    <field name="_version_" type="long" indexed="true" stored="true"/>
+    <field name="content" type="text" indexed="true" stored="true" multiValued="true"/>
+    <field name="product" type="keyword" indexed="true" stored="true" multiValued="true"/>
+    <field name="product.name" type="string" indexed="true" stored="false" multiValued="true" docValues="true"/>
+    <field name="issue_type" type="keyword" indexed="true" stored="true" multiValued="true"/>
+    <field name="issue_type.name" type="string" indexed="true" stored="false" multiValued="true" docValues="true"/>
+    <field name="component" type="keyword" indexed="true" stored="true" multiValued="true"/>
+    <field name="component.name" type="string" indexed="true" stored="false" multiValued="true" docValues="true"/>
+    <field name="team" type="keyword" indexed="true" stored="true" multiValued="true"/>
+    <field name="team.name" type="string" indexed="true" stored="false" multiValued="true" docValues="true"/>
+    <field name="resolution" type="keyword" indexed="true" stored="true" multiValued="true"/>
+    <field name="resolution.name" type="string" indexed="true" stored="false" multiValued="true" docValues="true"/>
+    <field name="release" type="keyword" indexed="true" stored="true" multiValued="true"/>
+    <field name="release.name" type="string" indexed="true" stored="false" multiValued="true" docValues="true"/>
+  </fields>
+  <copyField source="product" dest="product.name"/>
+  <copyField source="issue_type" dest="issue_type.name"/>
+  <copyField source="component" dest="component.name"/>
+  <copyField source="team" dest="team.name"/>
+  <copyField source="resolution" dest="resolution.name"/>
+  <copyField source="release" dest="release.name"/>
+  <types>
+    <fieldType name="string" class="solr.StrField" sortMissingLast="true"/>
+    <fieldType name="long" class="solr.TrieLongField" precisionStep="0" positionIncrementGap="0"/>
+    <fieldType name="keyword" class="solr.TextField" sortMissingLast="true" positionIncrementGap="100">
+      <analyzer>
+        <tokenizer class="solr.KeywordTokenizerFactory"/>
+        <filter class="solr.ASCIIFoldingFilterFactory"/>
+        <filter class="solr.LowerCaseFilterFactory"/>
+        <filter class="solr.TrimFilterFactory"/>
+      </analyzer>
+    </fieldType>
+    <fieldType name="text" class="solr.TextField" positionIncrementGap="100">
+      <analyzer>
+        <charFilter class="solr.HTMLStripCharFilterFactory"/>
+        <tokenizer class="solr.StandardTokenizerFactory"/>
+        <filter class="solr.ASCIIFoldingFilterFactory"/>
+        <filter class="solr.LowerCaseFilterFactory"/>
+      </analyzer>
+    </fieldType>
+  </types>
+</schema>

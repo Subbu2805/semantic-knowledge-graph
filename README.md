@@ -175,3 +175,37 @@ The easiest way to build the Semantic Knowledg Graph is to run the `build.sh` sc
 
 #Using the System
 Once the Semantic Knowledge Graph project has been built, you need to indexing a corpus of data through it by running the `feed.sh` script. The fields you include in your corpus should correspond to the fields defined in your Solr `schema.xml` found in the `deploy/solr/knowledge-graph/conf` directory.
+
+#Real-World Use Cases
+The distribution ships with four ready-to-query cores, each backed by a synthetic but realistically correlated corpus (`datasets/*.csv`, regenerated deterministically by `datasets/generate.py`), plus a catalog of 16 use cases (`use-cases/catalog.json`):
+
+| Core | Domain | Entity types | Example use cases |
+|------|--------|--------------|-------------------|
+| `jobs` | Talent intelligence (4,000 job postings) | `jobtitle`, `skills`, `industry`, `location`, `seniority`, `posted_year` | phrase → related job titles, defining skills of a role, skill → roles → locations, emerging skills (2026 vs 2024), candidate skill-gap scoring |
+| `ecommerce` | Product search (4,000 products) | `category`, `brand`, `attributes`, `search_terms`, `price_band` | query intent classification, ambiguous query disambiguation, related searches / query expansion, brand profiling |
+| `healthcare` | Clinical decision support (3,000 encounters, synthetic, not medical advice) | `conditions`, `symptoms`, `medications`, `specialty`, `age_group` | differential diagnosis from symptoms, typical treatments, comorbidity discovery, routing free-text notes to a specialty |
+| `support` | Customer support (4,000 tickets) | `product`, `issue_type`, `component`, `team`, `resolution`, `release` | ticket auto-routing, release regression detection (v4.3 vs earlier), root cause → resolution |
+
+Every entity type `<type>` is indexed as a lower-cased keyword field (`<type>`, used for searching and scoring) and a case-preserving docValues field (`<type>.name`, used to discover values), wired up through the `<type>.facet-field`, `<type>.key` and `<type>.fallback` invariants of the `/rel` handler. Use these cores as templates for your own domain.
+
+Example (release regression detection, foreground vs. background):
+```
+curl -X POST http://localhost:8983/solr/support/rel -H "Content-Type: application/json" -d '{
+  "queries": ["release:\"v4.3\""],
+  "background_queries": ["release:\"v4.1\" OR release:\"v4.2\""],
+  "compare": [{"type": "issue_type", "limit": 2, "compare": [{"type": "component", "limit": 1}]}]
+}'
+```
+
+#Running the Application
+```
+./build-solr.sh            # one-time: builds patched Solr 5.1.0 + plugin into ./deploy
+scripts/start-app.sh       # starts Solr, loads datasets if empty, runs the smoke test, starts the UI
+```
+* Solr / API: `http://localhost:8983/solr/<core>/rel`
+* SKG Explorer UI: `http://localhost:8080` — browse every use case, edit the request JSON and see scored, nested results. Its server only proxies `POST /api/<core>/rel` and `GET /api/<core>/ping` (plus `/healthz`), never Solr's update/admin endpoints.
+* `scripts/smoke_test.py` runs every catalog request and asserts its expected results (non-zero exit on failure) — use it as a post-deploy check.
+* `scripts/load-datasets.sh [core ...]` (re)indexes the datasets; `scripts/wait-for-solr.sh` blocks until all cores answer `/admin/ping`.
+* Settings: `SOLR_HEAP` (default `2g` via `start-app.sh`, `5g` via `restart-solr.sh`), `SOLR_PORT` (8983), `UI_PORT` (8080), `SOLR_URL`, `RELOAD_DATA=1`, `SKIP_UI=1`.
+
+Docker (after `./build-solr.sh`): `docker compose up --build` starts Solr (with a ping health check), a one-shot loader that indexes the datasets and runs the smoke test, and the UI on port 8080.
